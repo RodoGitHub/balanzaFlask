@@ -1,10 +1,12 @@
+from flask import Blueprint, request, jsonify
 from flask import Flask, jsonify, session, redirect, url_for, request
 import serial
 import time
 
-balanza_bp = Blueprint('auth', __name__)
+balanza_bp = Blueprint('balanza', __name__)
 
-@app.route("/peso", methods=["GET"])
+
+@balanza_bp.route("/peso", methods=["GET"])
 def obtener_peso():
 
     def comunicacion_balanza():

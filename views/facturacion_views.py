@@ -1,1 +1,3 @@
-facturacion_bp = Blueprint('auth', __name__)
+from flask import Blueprint, request, jsonify
+
+facturacion_bp = Blueprint('facturacion', __name__)
