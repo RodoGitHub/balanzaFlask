@@ -1,6 +1,6 @@
 from app import ma
 
-from marshmallow import validates, ValidationError
+#from marshmallow import validates, ValidationError
 
 from models import User, Marca, Modelo
 
