@@ -1,46 +1,28 @@
-from flask import Flask, jsonify, session, redirect, url_for, request
-from flask_cors import CORS  # Permite que React acceda a Flask desde otro dominio
-import serial
-import time
+import os
+from dotenv import load_dotenv
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_jwt_extended import JWTManager
+from flask_marshmallow import Marshmallow
+from flask_cors import CORS
+
+# Cargar variables de entorno antes de utilizarlas
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "una_clave_secreta"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 
-CORS(app)  # Habilita CORS para todas las rutas
+CORS(app, origins=["http://localhost:5173"])
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+jwt = JWTManager(app)
+ma = Marshmallow(app)
 
-def comunicacion_balanza():
-    
-    try:
-        with serial.Serial(
-            port="/dev/ttyUSB0",  # Cambia si el puerto es diferente
-            baudrate=9600,        
-            bytesize=serial.EIGHTBITS,  
-            parity=serial.PARITY_NONE,  
-            stopbits=serial.STOPBITS_ONE,  
-            timeout=1  
-        ) as dispositivo:
-            dispositivo.write(b'\x05')  # Enviar ENQ (0x05)
-            time.sleep(1)  # Pequeña espera para la respuesta
-            respuesta = dispositivo.read(100)
-            
-            if respuesta and respuesta[0] == 0x02:  
-                try:
-                    datos = respuesta[1:-2]  
-                    peso = int(datos.decode('utf-8'))  
-                    print(peso)
-                    return peso
-                    
-                except ValueError:
-                    return None
-        
-    except serial.SerialException:
-        return None
+# Mueve la importación de los modelos aquí para evitar importaciones circulares
+from models import User, Marca, Modelo
 
-@app.route("/peso", methods=["GET"])
-def obtener_peso():
-    peso = comunicacion_balanza()
-    peso_prueba = 1500
-    return jsonify({"peso": peso_prueba if peso_prueba is not None else "En espera..."})
-
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+from views import register_bp
+register_bp(app)

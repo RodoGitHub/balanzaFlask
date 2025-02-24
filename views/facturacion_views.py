@@ -1,0 +1,1 @@
+facturacion_bp = Blueprint('auth', __name__)

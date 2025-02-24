@@ -1,0 +1,1 @@
+productos_bp = Blueprint('auth', __name__)
