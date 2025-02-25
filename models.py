@@ -23,6 +23,7 @@ class Producto(db.Model):
     porcentaje = db.Column(db.Float, nullable=False)
     fecha_creacion = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     fecha_actualizacion = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    aplica_descuento = db.Column(db.Boolean, nullable=False, default=False)
 
     unidad_medida_id = db.Column(db.Integer, db.ForeignKey('unidad_medida.id'), nullable=False)
     categoria_id = db.Column(db.Integer, db.ForeignKey('categoria.id'), nullable=False)
