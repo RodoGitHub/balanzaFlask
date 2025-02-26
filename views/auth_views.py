@@ -12,7 +12,7 @@ from werkzeug.security import (
 )
 
 from app import db
-from models import User
+from models import Usuario
 from schemas import UserSchema, UserMinimalSchema
 
 auth_bp = Blueprint('auth', __name__)
@@ -44,7 +44,7 @@ def login():
         return jsonify({"Mensaje": "Invalid authorization format"}), 400
 
     # Consulta en la base de datos y verifica la autenticación
-    usuario = User.query.filter_by(username=username).first()
+    usuario = Usuario.query.filter_by(username=username).first()
     print("Usuario encontrado en base de datos:", usuario)
 
     if usuario and check_password_hash(usuario.password_hash, password):
