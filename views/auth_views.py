@@ -13,7 +13,7 @@ from werkzeug.security import (
 
 from app import db
 from models import Usuario
-from schemas import UserSchema, UserMinimalSchema
+from schemas import UsuarioSchema
 
 auth_bp = Blueprint('auth', __name__)
 

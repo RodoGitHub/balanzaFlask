@@ -27,6 +27,14 @@ class Producto(db.Model):
 
     unidad_medida_id = db.Column(db.Integer, db.ForeignKey('unidad_medida.id'), nullable=False)
     categoria_id = db.Column(db.Integer, db.ForeignKey('categoria.id'), nullable=False)
+    
+    detalles_venta = db.relationship('DetalleVenta', backref='producto', lazy=True)
+    
+    @validates('precio', 'porcentaje')
+    def validate_positive(self, key, value):
+        if value < 0:
+            raise ValueError(f"{key} debe ser positivo")
+        return value
 
 class Persona(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -55,7 +63,6 @@ class Usuario(db.Model):
 
 class Cliente(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-
     persona_id = db.Column(db.Integer, db.ForeignKey('persona.id'), nullable=False)
 
     creditos = db.relationship('Credito', backref='cliente', lazy=True)
@@ -70,21 +77,33 @@ class MetodoPago(db.Model):
 class Factura(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     total = db.Column(db.Float, nullable=False)
-    metodo_pago_id = db.Column(db.Integer, db.ForeignKey('metodo_pago.id'), nullable=False)
     fecha = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
-
-    detalle_venta_id = db.Column(db.Integer, db.ForeignKey('detalle_venta.id'), nullable=False)
-
+    
+    metodo_pago_id = db.Column(db.Integer, db.ForeignKey('metodo_pago.id'), nullable=False)
+    
+    # Relaciones
+    detalles_venta = db.relationship('DetalleVenta', backref='factura', lazy=True)
     usuario_facturas = db.relationship('UsuarioFactura', backref='factura', lazy=True)
     ccs = db.relationship('CC', backref='factura', lazy=True)
+    
+    @validates('total')
+    def validate_total(self, key, value):
+        if value < 0:
+            raise ValueError("El total no puede ser negativo")
+        return value
 
 class Credito(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pago = db.Column(db.Float, nullable=False)
-
-    cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False)
-
     fecha = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    
+    cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False)
+    
+    @validates('pago')
+    def validate_pago(self, key, value):
+        if value <= 0:
+            raise ValueError("El pago debe ser positivo")
+        return value
 
 class CC(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -99,11 +118,15 @@ class DetalleVenta(db.Model):
     fecha = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), nullable=False)
-
-    facturas = db.relationship('Factura', backref='detalle_venta', lazy=True)
+    factura_id = db.Column(db.Integer, db.ForeignKey('factura.id'), nullable=True)
+    
+    @validates('cantidad')
+    def validate_cantidad(self, key, value):
+        if value <= 0:
+            raise ValueError("La cantidad debe ser mayor que cero")
+        return value
 
 class UsuarioFactura(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     factura_id = db.Column(db.Integer, db.ForeignKey('factura.id'), nullable=False)
