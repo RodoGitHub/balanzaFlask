@@ -110,3 +110,40 @@ def users():
 
     except Exception as e:
         return jsonify({"Mensaje": "Error interno del servidor"}), 500
+
+@auth_bp.route('/users/<int:id>/delete', methods=['POST'])
+@jwt_required()
+def delete_user(id):
+    try:
+        claims = get_jwt()
+        rol_id = claims.get('rol_id')
+        
+        if rol_id != 1:
+            print(f"Intento de eliminar usuario sin permisos de administrador. Rol: {rol_id}")
+            return jsonify({"Mensaje": "Solo el administrador puede eliminar usuarios"}), 403
+        
+        usuario = Usuario.query.get(id)
+        
+        if not usuario:
+            print(f"Usuario con ID {id} no encontrado")
+            return jsonify({"Mensaje": "Usuario no encontrado"}), 404
+        
+        nombre_usuario = usuario.nombre_usuario
+        
+        db.session.delete(usuario)
+        db.session.commit()
+        
+        print(f"Usuario {nombre_usuario} (ID: {id}) eliminado exitosamente")
+        return jsonify({
+            "Mensaje": "Usuario eliminado correctamente",
+            "usuario": nombre_usuario,
+            "id": id
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al eliminar usuario: {str(e)}")
+        return jsonify({
+            "Mensaje": "Error al eliminar el usuario",
+            "error": str(e)
+        }), 500
