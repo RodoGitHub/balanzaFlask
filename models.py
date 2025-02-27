@@ -52,10 +52,11 @@ class Rol(db.Model):
     usuarios = db.relationship('Usuario', backref='rol', lazy=True)
 
 class Usuario(db.Model):
+    __tablename__ = 'usuario'
+    
     id = db.Column(db.Integer, primary_key=True)
-    nombre_usuario = db.Column(db.String(50), nullable=False, unique=True)
-    password = db.Column(db.String(50), nullable=False)
-
+    nombre_usuario = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
     rol_id = db.Column(db.Integer, db.ForeignKey('rol.id'), nullable=False)
     persona_id = db.Column(db.Integer, db.ForeignKey('persona.id'), nullable=False)
 
