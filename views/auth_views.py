@@ -21,7 +21,6 @@ auth_bp = Blueprint('auth', __name__)
 def login():
     try:
         data = request.get_json()
-        print("Datos recibidos:", data)
         
         if not data or not data.get('nombre_usuario') or not data.get('password'):
             return jsonify({"Mensaje": "Faltan datos de autorización"}), 400
@@ -34,11 +33,7 @@ def login():
         usuario = Usuario.query.filter_by(nombre_usuario=nombre_usuario).first()
         
         if not usuario:
-            print(f"Usuario {nombre_usuario} no encontrado")
             return jsonify({"Mensaje": "Usuario no encontrado"}), 401
-            
-        print("Usuario encontrado:", usuario)
-        print("Password almacenado (hash):", usuario.password)
 
         if check_password_hash(usuario.password, password):
             access_token = create_access_token(
@@ -48,13 +43,10 @@ def login():
                     'rol_id': usuario.rol_id,
                 }
             )
-            print("Autenticación exitosa para usuario:", nombre_usuario)
             return jsonify({
                 'Token': f'Bearer {access_token}',
                 'Mensaje': 'Login exitoso'
             })
-
-        print("Password incorrecto para usuario:", nombre_usuario)
         return jsonify({"Mensaje": "Contraseña incorrecta"}), 401
     
     except Exception as e:
@@ -71,10 +63,8 @@ def users():
                 return jsonify({"Mensaje": "Solo el administrador puede crear usuarios"}), 403
 
             data = request.get_json()
-            print("Datos recibidos para crear usuario:", data)
 
             if not all(key in data for key in ['nombre_usuario', 'password', 'rol_id', 'persona_id']):
-                print("Faltan datos en la petición")
                 return jsonify({"Mensaje": "Faltan datos requeridos"}), 400
 
             try:
@@ -87,7 +77,6 @@ def users():
                 
                 db.session.add(nuevo_usuario)
                 db.session.commit()
-                print(f"Usuario {data['nombre_usuario']} creado exitosamente")
                 return jsonify({
                     "Mensaje": "Usuario creado correctamente",
                     "usuario": data['nombre_usuario']
@@ -95,7 +84,6 @@ def users():
             
             except Exception as e:
                 db.session.rollback()
-                print("Error al crear usuario:", str(e))
                 return jsonify({
                     "Mensaje": "Error al crear el usuario",
                     "error": str(e)
@@ -119,13 +107,11 @@ def delete_user(id):
         rol_id = claims.get('rol_id')
         
         if rol_id != 1:
-            print(f"Intento de eliminar usuario sin permisos de administrador. Rol: {rol_id}")
             return jsonify({"Mensaje": "Solo el administrador puede eliminar usuarios"}), 403
         
         usuario = Usuario.query.get(id)
         
         if not usuario:
-            print(f"Usuario con ID {id} no encontrado")
             return jsonify({"Mensaje": "Usuario no encontrado"}), 404
         
         nombre_usuario = usuario.nombre_usuario
@@ -133,7 +119,6 @@ def delete_user(id):
         db.session.delete(usuario)
         db.session.commit()
         
-        print(f"Usuario {nombre_usuario} (ID: {id}) eliminado exitosamente")
         return jsonify({
             "Mensaje": "Usuario eliminado correctamente",
             "usuario": nombre_usuario,
@@ -142,8 +127,47 @@ def delete_user(id):
         
     except Exception as e:
         db.session.rollback()
-        print(f"Error al eliminar usuario: {str(e)}")
         return jsonify({
             "Mensaje": "Error al eliminar el usuario",
+            "error": str(e)
+        }), 500
+
+@auth_bp.route('/users/<int:id>/editar', methods=['POST'])
+@jwt_required()
+def change_password(id):
+    try:
+        claims = get_jwt()
+        rol_id = claims.get('rol_id')
+        
+        usuario = Usuario.query.get(id)
+        if not usuario:
+            return jsonify({"Mensaje": "Usuario no encontrado"}), 404
+
+        # Verificar permisos (solo admin o el mismo usuario)
+        if rol_id != 1:
+            return jsonify({
+                "Mensaje": "No tiene permisos para cambiar esta contraseña"
+            }), 403
+
+        data = request.get_json()
+        if not data or 'password' not in data:
+            return jsonify({
+                "Mensaje": "Falta la nueva contraseña"
+            }), 400
+
+        # Actualizar la contraseña
+        usuario.password = generate_password_hash(data['password'])
+        db.session.commit()
+
+        return jsonify({
+            "Mensaje": "Contraseña actualizada correctamente",
+            "usuario": usuario.nombre_usuario
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al cambiar contraseña: {str(e)}")
+        return jsonify({
+            "Mensaje": "Error al cambiar la contraseña",
             "error": str(e)
         }), 500
