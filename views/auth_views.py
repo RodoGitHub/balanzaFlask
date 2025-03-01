@@ -59,7 +59,6 @@ def users():
     try:
         if request.method == 'POST':
             if rol_id != 1:
-                print("Intento de crear usuario sin permisos de administrador")
                 return jsonify({"Mensaje": "Solo el administrador puede crear usuarios"}), 403
 
             data = request.get_json()
