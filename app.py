@@ -32,3 +32,6 @@ register_bp(app)
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+"""export FLASK_DEBUG=1
+flask run"""

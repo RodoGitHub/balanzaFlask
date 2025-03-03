@@ -6,62 +6,62 @@ from flask_jwt_extended import (
     )
 
 from app import db
-from models import Persona
-from schemas import PersonaSchema
+from models import Categoria
+from schemas import CategoriaSchema
 
-persona_bp = Blueprint('personas', __name__)
+categoria_bp = Blueprint('categorias', __name__)
 
-@persona_bp.route('/persona', methods=['GET','POST'])
+@categoria_bp.route('/categoria', methods=['GET','POST'])
 @jwt_required()
-def persona():
+def categoria():
     try:
         if request.method == 'POST':
+
             claims = get_jwt()
             rol_id = claims.get('rol_id')
+
             if rol_id != 1:
-                return jsonify({"mensaje": "No tienes permisos para crear Personas"})
+                return jsonify({"mensaje": "No tienes permisos para crear"})
             data = request.get_json()
 
-            if not data or not data.get('nombre') or not data.get('contacto') or not data.get('direccion'):
+            if not data or not data.get('nombre'):
                 return jsonify({"mensaje": "Debe llenar todos los campos"})
             
             try:
-                nueva_persona = Persona(
-                    nombre=data['nombre'],
-                    contacto=data['contacto'],
-                    direccion=data['direccion']
+                nueva_categoria = Categoria(
+                    nombre=data['nombre']
                 )
 
-                db.session.add(nueva_persona)
+                db.session.add(nueva_categoria)
                 db.session.commit()
-                return jsonify({"mensaje": "Persona creada exitosamente"}), 201
+                return jsonify({"mensaje": "Creada exitosamente"}), 201
 
             except Exception as e:
-                return jsonify({"mensaje": "Error al crear el Persona"}), 500
+                return jsonify({"mensaje": "Error al crear"}), 500
 
-        persona = Persona.query.all()
-        persona_schema = PersonaSchema(many=True)
-        resultado = persona_schema.dump(persona)
+        categoria = Categoria.query.all()
+        categoria_schema = CategoriaSchema(many=True)
+        resultado = categoria_schema.dump(categoria)
         if not resultado:
             return jsonify({"mensaje": "No existen registros"})
         else:
             return jsonify({
-                "persona": resultado
+                "Categorias": resultado
             }), 200
 
     except Exception as e:
         return jsonify({"mensaje": "Error interno del servidor"}), 500
 
-@persona_bp.route('/persona/<int:id>/editar', methods=['POST'])
+@categoria_bp.route('/categoria/<int:id>/editar', methods=['POST'])
 @jwt_required()
-def editar_persona(id):
+def editar_categoria(id):
     try:
         claims = get_jwt()
         rol_id = claims.get('rol_id')
         
-        persona = Persona.query.get(id)
-        if not persona:
-            return jsonify({"Mensaje": "No se encontro la persona"}), 404
+        categoria = Categoria.query.get(id)
+        if not categoria:
+            return jsonify({"Mensaje": "No se encontro la categoria"}), 404
 
         if rol_id != 1:
             return jsonify({
@@ -74,15 +74,13 @@ def editar_persona(id):
                 "Mensaje": "Por favor llenar todos los campos"
             }), 400
 
-        persona.nombre = data['nombre']
-        persona.contacto = data['contacto']
-        persona.direccion = data['direccion']
+        categoria.nombre = data['nombre']
 
         db.session.commit()
 
         return jsonify({
             "Mensaje": "Datos actualizados correctamente",
-            "Persona": persona.nombre
+            "Persona": categoria.nombre
         }), 200
 
     except Exception as e:
@@ -92,27 +90,27 @@ def editar_persona(id):
             "error": str(e)
         }), 500
 
-@persona_bp.route('/persona/<int:id>/delete', methods=['POST'])
+@categoria_bp.route('/categoria/<int:id>/delete', methods=['POST'])
 @jwt_required()
-def delete_persona(id):
+def delete_categoria(id):
     try:
         claims = get_jwt()
         rol_id = claims.get('rol_id')
         
         if rol_id != 1:
-            return jsonify({"Mensaje": "Solo el administrador puede eliminar personas"}), 403
+            return jsonify({"Mensaje": "Solo el administrador puede eliminar"}), 403
         
-        persona = Persona.query.get(id)
+        categoria = Categoria.query.get(id)
         
-        if not persona:
-            return jsonify({"Mensaje": "No se encuentra la persona"}), 404
+        if not categoria:
+            return jsonify({"Mensaje": "No se encuentra categoria"}), 404
         
-        db.session.delete(persona)
+        db.session.delete(categoria)
         db.session.commit()
         
         return jsonify({
             "Mensaje": "Se elimino correctamente",
-            "Persona": persona.nombre,
+            "Persona": categoria.nombre,
             "id": id
         }), 200
         

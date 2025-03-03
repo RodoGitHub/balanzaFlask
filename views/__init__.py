@@ -5,6 +5,10 @@ from .facturacion_views import facturacion_bp
 from .productos_views import productos_bp
 from .rol_views import rol_bp
 from .um_views import um_bp
+from .persona_views import persona_bp
+from .categoria_views import categoria_bp
+
+
 
 
 
@@ -16,4 +20,5 @@ def register_bp(app):
     app.register_blueprint(productos_bp)
     app.register_blueprint(rol_bp)
     app.register_blueprint(um_bp)
-
+    app.register_blueprint(persona_bp)
+    app.register_blueprint(categoria_bp)
