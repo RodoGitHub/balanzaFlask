@@ -22,6 +22,8 @@ rol_bp = Blueprint('rol', __name__)
 def crear_ver_roles():
     try:
         if request.method == 'POST':
+            claims = get_jwt()
+            rol_id = claims.get('rol_id')
             if rol_id != 1:
                 return jsonify({"mensaje": "No tienes permisos para crear roles"})
             data = request.get.json()
@@ -44,9 +46,13 @@ def crear_ver_roles():
         roles = Rol.query.all()
         roles_schema = RolSchema(many=True)
         resultado = roles_schema.dump(roles)
-        return jsonify({
-            "roles": resultado
-        }), 200
+        
+        if not resultado:
+            return jsonify({"mensaje": "No existen registros"})
+        else:
+            return jsonify({
+                "um": resultado
+            }), 200
 
     except Exception as e:
         return jsonify({"mensaje": "Error interno del servidor"}), 500
