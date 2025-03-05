@@ -1,4 +1,6 @@
-from marshmallow import Schema, fields, validates, ValidationError
+from marshmallow import Schema, fields, validates, ValidationError, post_dump
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 class UnidadMedidaSchema(Schema):
     id = fields.Int(dump_only=True)
@@ -17,6 +19,26 @@ class ProductoSchema(Schema):
     fecha_actualizacion = fields.DateTime(dump_only=True)
     unidad_medida_id = fields.Int(required=True)
     categoria_id = fields.Int(required=True)
+
+    @post_dump
+    def adjust_dates(self, data, **kwargs):
+        argentina_tz = ZoneInfo("America/Argentina/Buenos_Aires")
+        
+        if 'fecha_creacion' in data and data['fecha_creacion']:
+            fecha_utc = datetime.fromisoformat(data['fecha_creacion'])
+            if fecha_utc.tzinfo is None:  # Si la fecha no tiene zona horaria
+                fecha_utc = fecha_utc.replace(tzinfo=timezone.utc)
+            fecha_arg = fecha_utc.astimezone(argentina_tz)
+            data['fecha_creacion'] = fecha_arg.strftime("%Y-%m-%d %H:%M:%S")
+            
+        if 'fecha_actualizacion' in data and data['fecha_actualizacion']:
+            fecha_utc = datetime.fromisoformat(data['fecha_actualizacion'])
+            if fecha_utc.tzinfo is None:  # Si la fecha no tiene zona horaria
+                fecha_utc = fecha_utc.replace(tzinfo=timezone.utc)
+            fecha_arg = fecha_utc.astimezone(argentina_tz)
+            data['fecha_actualizacion'] = fecha_arg.strftime("%Y-%m-%d %H:%M:%S")
+            
+        return data
 
     @validates("precio")
     def validate_precio(self, value):
