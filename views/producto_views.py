@@ -57,3 +57,35 @@ def producto():
 
     except Exception as e:
         return jsonify({"mensaje": "Error interno del servidor"}), 500
+
+
+@producto_bp.route('/producto/<int:id>/delete', methods=['POST'])
+@jwt_required()
+def delete_producto(id):
+    try:
+        claims = get_jwt()
+        rol_id = claims.get('rol_id')
+        
+        if rol_id != 1:
+            return jsonify({"Mensaje": "Solo el administrador puede eliminar"}), 403
+        
+        producto = Producto.query.get(id)
+        
+        if not producto:
+            return jsonify({"Mensaje": "No se encuentra el producto"}), 404
+        
+        db.session.delete(producto)
+        db.session.commit()
+        
+        return jsonify({
+            "Mensaje": "Se elimino correctamente",
+            "Persona": producto.nombre,
+            "id": id
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "Mensaje": "Error al eliminar al eliminar",
+            "error": str(e)
+        }), 500
