@@ -19,6 +19,7 @@ class ProductoSchema(Schema):
     fecha_actualizacion = fields.DateTime(dump_only=True)
     unidad_medida_id = fields.Int(required=True)
     categoria_id = fields.Int(required=True)
+    aplica_descuento = fields.Boolean()
 
     @post_dump
     def adjust_dates(self, data, **kwargs):

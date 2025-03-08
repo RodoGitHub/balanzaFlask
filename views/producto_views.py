@@ -89,3 +89,44 @@ def delete_producto(id):
             "Mensaje": "Error al eliminar al eliminar",
             "error": str(e)
         }), 500
+
+@producto_bp.route('/producto/<int:id>/editar', methods=['POST'])
+@jwt_required()
+def editar_producto(id):
+    try:
+        claims = get_jwt()
+        rol_id = claims.get('rol_id')
+        
+        producto = Producto.query.get(id)
+        if not producto:
+            return jsonify({"Mensaje": "No se encontro el producto"}), 404
+
+        if rol_id != 1:
+            return jsonify({
+                "Mensaje": "No tiene permisos para editar"
+            }), 403
+
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                "Mensaje": "Por favor llenar todos los campos"
+            }), 400
+
+        producto.nombre = data['nombre']
+        producto.precio = data['precio']
+        producto.porcentaje = data['porcentaje']
+        producto.aplica_descuento = data['aplica_descuento']
+
+        db.session.commit()
+
+        return jsonify({
+            "Mensaje": "Datos actualizados correctamente",
+            "Producto": producto.nombre
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "Mensaje": "Error al actualizar datos",
+            "error": str(e)
+        }), 500

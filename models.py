@@ -82,7 +82,6 @@ class Factura(db.Model):
     
     metodo_pago_id = db.Column(db.Integer, db.ForeignKey('metodo_pago.id'), nullable=False)
     
-    # Relaciones
     detalles_venta = db.relationship('DetalleVenta', backref='factura', lazy=True)
     usuario_facturas = db.relationship('UsuarioFactura', backref='factura', lazy=True)
     ccs = db.relationship('CC', backref='factura', lazy=True)
