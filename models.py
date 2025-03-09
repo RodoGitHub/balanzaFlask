@@ -82,7 +82,7 @@ class Factura(db.Model):
     
     metodo_pago_id = db.Column(db.Integer, db.ForeignKey('metodo_pago.id'), nullable=False)
     
-    detalles_venta = db.relationship('DetalleVenta', backref='factura', lazy=True)
+    detalle_venta = db.relationship('DetalleVenta', backref='factura', lazy=True)
     usuario_facturas = db.relationship('UsuarioFactura', backref='factura', lazy=True)
     ccs = db.relationship('CC', backref='factura', lazy=True)
     
@@ -115,11 +115,11 @@ class CC(db.Model):
 class DetalleVenta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cantidad = db.Column(db.Integer, nullable=False)
-    fecha = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
-
-    producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), nullable=False)
-    factura_id = db.Column(db.Integer, db.ForeignKey('factura.id'), nullable=True)
+    subtotal = db.Column(db.Integer, nullable=False)
     
+    producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), nullable=False)
+    factura_id = db.Column(db.Integer, db.ForeignKey('factura.id'), nullable=False)
+        
     @validates('cantidad')
     def validate_cantidad(self, key, value):
         if value <= 0:
