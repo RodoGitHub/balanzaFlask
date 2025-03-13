@@ -19,7 +19,7 @@ def insertar_usuarios():
         db.create_all()
         usuarios = [
             Usuario(
-                nombre_usuario='admin3',
+                nombre_usuario='admin',
                 password=generate_password_hash('1234'),  # Hashear la contraseña
                 rol_id=1,
                 persona_id=1
