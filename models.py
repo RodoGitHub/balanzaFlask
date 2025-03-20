@@ -1,6 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
 from datetime import datetime, timezone
+from sqlalchemy.sql import func
+
 
 db = SQLAlchemy()
 
@@ -14,20 +16,21 @@ class Categoria(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(50), nullable=False, unique=True)
 
-    productos = db.relationship('Producto', backref='categoria', lazy=True)
 
 class Producto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(50), nullable=False)
     precio = db.Column(db.Float, nullable=False)
     porcentaje = db.Column(db.Float, nullable=False)
-    fecha_creacion = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    fecha_actualizacion = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
-    aplica_descuento = db.Column(db.Boolean, nullable=False, default=False)
+    fecha_creacion = db.Column(db.DateTime, default=func.now())  # Se guarda la fecha actual automáticamente
+    fecha_actualizacion = db.Column(db.DateTime, default=func.now(), onupdate=func.now())  # Se actualiza al modificar
+    aplica_descuento = db.Column(db.Boolean, nullable=False, default=True)
+    activo_pantalla = db.Column(db.Boolean, nullable=False, default=True)
 
     unidad_medida_id = db.Column(db.Integer, db.ForeignKey('unidad_medida.id'), nullable=False)
     categoria_id = db.Column(db.Integer, db.ForeignKey('categoria.id'), nullable=False)
     
+    categoria = db.relationship('Categoria', backref='productos')
     detalles_venta = db.relationship('DetalleVenta', backref='producto', lazy=True)
     
     @validates('precio', 'porcentaje')

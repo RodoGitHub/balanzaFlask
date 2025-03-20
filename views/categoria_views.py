@@ -17,8 +17,8 @@ def categoria():
     try:
         if request.method == 'POST':
 
-            claims = get_jwt()
-            rol_id = claims.get('rol_id')
+            autorizacion = get_jwt()
+            rol_id = autorizacion.get('rol_id')
 
             if rol_id != 1:
                 return jsonify({"mensaje": "No tienes permisos para crear"})

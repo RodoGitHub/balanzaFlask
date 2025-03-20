@@ -21,18 +21,21 @@ def producto():
             if rol_id != 1:
                 return jsonify({"mensaje": "No tienes permisos para esta seccion"})
             data = request.get_json()
+            
+            if not data or not all(key in data for key in ['nombre', 'precio', 'unidad_medida_id', 'categoria_id']):
 
-            if not data or not data.get('nombre') or not data.get('precio') or not data.get('porcentaje') or not data.get('unidad_medida_id') or not data.get('categoria_id'):
                 return jsonify({"mensaje": "Debe llenar todos los campos"})
                 
-            print("entra")
             try:
                 nuevo_producto = Producto(
                     nombre=data['nombre'],
                     precio=data['precio'],
-                    porcentaje=data['porcentaje'],
+                    porcentaje=data.get('porcentaje', 0),  # Si no se envía, usa 0 por defecto
+                    aplica_descuento=data.get('aplica_descuento', False),
                     unidad_medida_id=data['unidad_medida_id'],
-                    categoria_id=data['categoria_id']
+                    categoria_id=data['categoria_id'],
+                    activo_pantalla=data['activo_pantalla']
+                    
                 )
 
                 db.session.add(nuevo_producto)
@@ -116,6 +119,9 @@ def editar_producto(id):
         producto.precio = data['precio']
         producto.porcentaje = data['porcentaje']
         producto.aplica_descuento = data['aplica_descuento']
+        producto.unidad_medida_id = data['unidad_medida_id']
+        producto.categoria_id = data['categoria_id']
+        producto.activo_pantalla = data['activo_pantalla']
 
         db.session.commit()
 

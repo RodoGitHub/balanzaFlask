@@ -27,8 +27,6 @@ def login():
 
         nombre_usuario = data.get('nombre_usuario')
         password = data.get('password')
-        print(f"Username recibido: {nombre_usuario}")
-        print(f"Password recibido: {password}")
 
         usuario = Usuario.query.filter_by(nombre_usuario=nombre_usuario).first()
         
@@ -38,7 +36,7 @@ def login():
         if check_password_hash(usuario.password, password):
             access_token = create_access_token(
                 identity=nombre_usuario,
-                expires_delta=timedelta(minutes=60),
+                expires_delta=timedelta(days=1),
                 additional_claims={
                     'rol_id': usuario.rol_id,
                 }
@@ -58,6 +56,8 @@ def login():
 def users():
     try:
         if request.method == 'POST':
+            claims = get_jwt()
+            rol_id = claims.get('rol_id')
             if rol_id != 1:
                 return jsonify({"Mensaje": "Solo el administrador puede crear usuarios"}), 403
 
