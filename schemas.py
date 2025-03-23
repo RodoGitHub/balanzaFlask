@@ -22,6 +22,7 @@ class ProductoSchema(Schema):
     categoria = fields.Nested(CategoriaSchema) 
     aplica_descuento = fields.Boolean()
     activo_pantalla = fields.Boolean() 
+    imagen_url = fields.Str(allow_none=True) 
 
     @post_dump
     def adjust_dates(self, data, **kwargs):

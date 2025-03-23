@@ -17,17 +17,21 @@ db.init_app(app)
 def insertar_usuarios():
     with app.app_context():
         db.create_all()
+        password_plano = '1234'  # Contraseña en texto plano
+        password_hasheada = generate_password_hash(password_plano)  # Hashear la contraseña
+        
+        # Imprimir la contraseña hasheada
+        print(f"Contraseña hasheada: {password_hasheada}")
+        
         usuarios = [
             Usuario(
                 nombre_usuario='admin3',
-                password=generate_password_hash('1234'),  # Hashear la contraseña
+                password=password_hasheada,  # Usar la contraseña hasheada
                 rol_id=1,
                 persona_id=1
             ),
         ]
-        
-        db.session.add_all(usuarios)
-        db.session.commit()
+
         print("Usuarios insertados correctamente.")
 
 if __name__ == '__main__':

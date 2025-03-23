@@ -26,6 +26,7 @@ class Producto(db.Model):
     fecha_actualizacion = db.Column(db.DateTime, default=func.now(), onupdate=func.now())  # Se actualiza al modificar
     aplica_descuento = db.Column(db.Boolean, nullable=False, default=True)
     activo_pantalla = db.Column(db.Boolean, nullable=False, default=True)
+    imagen_url = db.Column(db.String(255), nullable=True)
 
     unidad_medida_id = db.Column(db.Integer, db.ForeignKey('unidad_medida.id'), nullable=False)
     categoria_id = db.Column(db.Integer, db.ForeignKey('categoria.id'), nullable=False)
